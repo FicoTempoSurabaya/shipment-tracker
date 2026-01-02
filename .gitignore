@@ -1,0 +1,108 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+.pnp/
+.pnp.js
+.yarn/install-state.gz
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.*.local
+
+# =========================
+# Build & Output
+# =========================
+.next/
+dist/
+build/
+out/
+dist-ssr/
+.nuxt/
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# =========================
+# Coverage & Testing
+# =========================
+coverage/
+.nyc_output/
+
+# =========================
+# Cache & Temporary Files
+# =========================
+.cache/
+.temp/
+tmp/
+temp/
+*.tmp
+
+# =========================
+# Runtime data
+# =========================
+pids
+*.pid
+*.pid.lock
+*.seed
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
+# Database files
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Uploads
+# =========================
+public/uploads/
+uploads/
+
+# =========================
+# SSL / Secrets
+# =========================
+*.pem
+*.key
+*.crt

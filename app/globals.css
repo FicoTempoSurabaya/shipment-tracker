@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --azure-bg: #E6F0FA;
+    --azure-surface: #EDF4FB;
+    --azure-shadow-dark: #C5D6E8;
+    --azure-shadow-light: #FFFFFF;
+    --text-primary: #1F2A44;
+    --text-secondary: #5F6F86;
+    --accent-primary: #3B82F6;
+    --accent-secondary: #22D3EE;
+    --warning-bg: #FEE2E2;
+    --warning-accent: #EF4444;
+    --warning-text: #991B1B;
+    --warning-shadow: #F5BABA;
+    --caution-bg: #FEF9C3;
+    --caution-accent: #F59E0B;
+    --caution-text: #92400E;
+    --caution-shadow: #F2D88A;
+  }
+
+  body {
+    @apply bg-azure-bg text-text-primary;
+  }
+}
+
+@layer components {
+  .neumorphic {
+    @apply bg-azure-surface rounded-2xl;
+    box-shadow: 
+      12px 12px 24px var(--azure-shadow-dark),
+      -12px -12px 24px var(--azure-shadow-light);
+  }
+
+  .neumorphic-inset {
+    @apply bg-azure-surface rounded-2xl;
+    box-shadow: 
+      inset 6px 6px 12px var(--azure-shadow-dark),
+      inset -6px -6px 12px var(--azure-shadow-light);
+  }
+
+  .neumorphic-flat {
+    @apply bg-azure-surface rounded-xl;
+    box-shadow: 
+      0 4px 6px -1px rgba(197, 214, 232, 0.3),
+      0 2px 4px -1px rgba(197, 214, 232, 0.2);
+  }
+}
