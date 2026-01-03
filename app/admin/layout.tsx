@@ -36,8 +36,11 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-text-secondary">Memuat...</div>
+      <div className="min-h-screen bg-azure-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+           <div className="w-12 h-12 rounded-full border-4 border-azure-surface border-t-accent-primary animate-spin shadow-neu-flat"></div>
+           <p className="text-text-secondary font-medium animate-pulse">Memuat Dashboard...</p>
+        </div>
       </div>
     )
   }
@@ -45,10 +48,15 @@ export default function AdminLayout({
   if (!user) return null
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-azure-bg overflow-hidden relative">
+      {/* Sidebar */}
       <AdminSidebar userName={user.namaLengkap} />
-      <main className="flex-1 overflow-auto p-6">
-        {children}
+
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-x-hidden overflow-y-auto relative scroll-smooth">
+        <div className="container mx-auto px-4 py-20 md:py-8 max-w-7xl">
+           {children}
+        </div>
       </main>
     </div>
   )

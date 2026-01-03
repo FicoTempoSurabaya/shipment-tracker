@@ -10,10 +10,10 @@ const inter = Inter({
 })
 
 export const viewport: Viewport = {
-  themeColor: '#E0F2FE', // Matches new azure-bg
+  themeColor: '#E6EEF6', 
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1, // Mencegah zoom berlebihan pada input form di mobile
+  maximumScale: 1, 
 }
 
 export const metadata: Metadata = {
@@ -22,33 +22,9 @@ export const metadata: Metadata = {
     default: 'Shipment Tracker - Smart Logistics Management',
   },
   description: 'Sistem pelacakan shipment dan dukungan engagement modern untuk efisiensi logistik maksimal.',
-  keywords: ['shipment', 'tracking', 'logistics', 'delivery', 'management', 'freelance'],
-  authors: [{ name: 'Shipment Tracker Team' }],
-  creator: 'Shipment Tracker',
-  publisher: 'Shipment Tracker',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
-  },
-  manifest: '/manifest.json',
-  openGraph: {
-    type: 'website',
-    locale: 'id_ID',
-    url: 'https://shipment-tracker.vercel.app',
-    title: 'Shipment Tracker',
-    description: 'Sistem pelacakan shipment dan dukungan engagement',
-    siteName: 'Shipment Tracker',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
   },
 }
 
@@ -59,22 +35,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`scroll-smooth ${inter.variable}`}>
-      <body className={`${inter.className} bg-azure-bg text-text-primary antialiased min-h-screen selection:bg-accent-primary selection:text-white overflow-x-hidden relative`}>
+      <body className={`${inter.className} bg-azure-bg text-text-primary antialiased relative overflow-x-hidden selection:bg-accent-primary selection:text-white`}>
         <PerformanceOptimizer />
         
-        {/* Ambient Background Elements - Memberikan kesan 'fresh' & depth halus */}
-        <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-50 pointer-events-none opacity-60">
-           {/* Top Left Blob */}
-           <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] rounded-full bg-gradient-to-br from-blue-200/40 to-cyan-200/40 blur-3xl filter animate-pulse-slow"></div>
+        {/* --- DYNAMIC BACKGROUND ELEMENTS (FRESH & ALIVE) --- */}
+        <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none">
+           {/* Blob 1: Top Left - Cyan/Blue */}
+           <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] rounded-full mix-blend-multiply filter blur-[80px] opacity-40 animate-float bg-gradient-to-r from-cyan-300 to-blue-300"></div>
            
-           {/* Bottom Right Blob */}
-           <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] rounded-full bg-gradient-to-tl from-indigo-200/40 to-sky-200/40 blur-3xl filter animate-pulse-slow animate-delay-200"></div>
+           {/* Blob 2: Bottom Right - Purple/Indigo */}
+           <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] rounded-full mix-blend-multiply filter blur-[80px] opacity-40 animate-float bg-gradient-to-l from-indigo-300 to-purple-300" style={{ animationDelay: '2s' }}></div>
            
-           {/* Center Accent (Very subtle) */}
-           <div className="absolute top-[40%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] rounded-full bg-white/20 blur-3xl filter mix-blend-overlay"></div>
+           {/* Blob 3: Center Accent - Soft White Glow */}
+           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] rounded-full bg-white opacity-20 filter blur-[100px]"></div>
         </div>
 
-        <main className="relative z-0 flex min-h-screen flex-col">
+        <main className="min-h-screen flex flex-col relative z-0">
           {children}
         </main>
       </body>

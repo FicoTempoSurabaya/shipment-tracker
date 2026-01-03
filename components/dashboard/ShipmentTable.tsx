@@ -12,8 +12,17 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from '@tanstack/react-table'
-import { ChevronLeft, ChevronRight, Search, Edit, Trash2, DollarSign } from 'lucide-react'
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Search, 
+  Edit, 
+  Trash2, 
+  DollarSign, 
+  ArrowUpDown
+} from 'lucide-react'
 
+// --- TIPE DATA ---
 interface ShipmentData {
   submit_id: number
   nama_lengkap: string
@@ -24,6 +33,7 @@ interface ShipmentData {
   terkirim: number
   gagal: number
   alasan?: string
+  biaya_freelance?: number 
 }
 
 interface ShipmentTableProps {
@@ -44,216 +54,205 @@ export default function ShipmentTable({
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState({})
 
   const columns: ColumnDef<ShipmentData>[] = [
-    ...(isAdmin ? [
-      {
-        accessorKey: 'nama_lengkap',
-        header: 'Nama Lengkap',
-        cell: ({ row }: { row: any }) => (
-          <div className="font-medium">{row.getValue('nama_lengkap')}</div>
-        ),
-      },
-      {
-        accessorKey: 'nama_freelance',
-        header: 'Nama Freelance',
-        cell: ({ row }: { row: any }) => (
-          <div>{row.getValue('nama_freelance') || '-'}</div>
-        ),
-      },
-    ] : []),
+    {
+      accessorKey: 'nama_lengkap',
+      header: ({ column }) => (
+        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors uppercase whitespace-nowrap"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Nama Lengkap <ArrowUpDown size={14} />
+        </button>
+      ),
+      cell: ({ row }) => <span className="font-bold text-text-primary whitespace-nowrap">{row.getValue('nama_lengkap')}</span>,
+    },
+    {
+      accessorKey: 'nama_freelance',
+      header: ({ column }) => (
+        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors uppercase whitespace-nowrap"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Freelance <ArrowUpDown size={14} />
+        </button>
+      ),
+      cell: ({ row }) => {
+        const name = row.getValue('nama_freelance') as string
+        return name ? (
+          <span className="px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100 whitespace-nowrap">
+            {name}
+          </span>
+        ) : <span className="text-text-muted text-xs">-</span>
+      }
+    },
     {
       accessorKey: 'tanggal',
-      header: 'Tanggal',
-      cell: ({ row }: { row: any }) => (
-        <div>{new Date(row.getValue('tanggal')).toLocaleDateString('id-ID')}</div>
+      header: ({ column }) => (
+        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors uppercase whitespace-nowrap"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Tanggal <ArrowUpDown size={14} />
+        </button>
       ),
+      cell: ({ row }) => <span className="whitespace-nowrap">{new Date(row.getValue('tanggal')).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' })}</span>,
     },
     {
       accessorKey: 'shipment_id',
-      header: 'Shipment ID',
+      header: ({ column }) => (
+        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors uppercase whitespace-nowrap"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          ID <ArrowUpDown size={14} />
+        </button>
+      ),
+      cell: ({ row }) => <span className="font-bold text-accent-primary whitespace-nowrap">#{row.getValue('shipment_id')}</span>,
     },
     {
       accessorKey: 'jumlah_toko',
-      header: 'Jumlah Toko',
+      header: ({ column }) => (
+        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors uppercase whitespace-nowrap"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Toko <ArrowUpDown size={14} />
+        </button>
+      ),
+      cell: ({ row }) => <span className="font-medium pl-2">{row.getValue('jumlah_toko')}</span>,
     },
     {
-      accessorKey: 'terkirim',
-      header: 'Terkirim',
-    },
-    {
-      accessorKey: 'gagal',
-      header: 'Gagal',
+      id: 'status',
+      header: 'STATUS',
+      cell: ({ row }) => (
+        <div className="flex flex-col text-xs font-bold gap-0.5 whitespace-nowrap">
+          <span className="text-emerald-600">OK: {row.original.terkirim}</span>
+          {(row.original.gagal > 0) && <span className="text-rose-600">Fail: {row.original.gagal}</span>}
+        </div>
+      )
     },
     {
       accessorKey: 'alasan',
-      header: 'Alasan',
-      cell: ({ row }: { row: any }) => (
-        <div className="max-w-xs truncate">{row.getValue('alasan') || '-'}</div>
-      ),
+      header: 'ALASAN',
+      cell: ({ row }) => {
+        const alasan = row.getValue('alasan') as string
+        return alasan ? <div className="min-w-[150px] text-xs text-text-secondary italic">"{alasan}"</div> : <span className="text-text-muted">-</span>
+      }
     },
     {
       id: 'actions',
-      header: 'Aksi',
-      cell: ({ row }: { row: any }) => {
-        const shipment = row.original as ShipmentData
-        
-        return (
-          <div className="flex space-x-2">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(shipment)}
-                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                title="Edit"
-              >
-                <Edit size={16} />
-              </button>
-            )}
-            
-            {onDelete && (
-              <button
-                onClick={() => onDelete(shipment)}
-                className="p-1 text-red-600 hover:bg-red-50 rounded"
-                title="Hapus"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-            
-            {isAdmin && shipment.nama_freelance && onFreelanceCost && (
-              <button
-                onClick={() => onFreelanceCost(shipment)}
-                className="p-1 text-green-600 hover:bg-green-50 rounded"
-                title="Biaya Freelance"
-              >
-                <DollarSign size={16} />
-              </button>
-            )}
-          </div>
-        )
-      },
-    },
+      header: 'AKSI',
+      cell: ({ row }) => isAdmin && (
+        <div className="flex items-center gap-2 px-2">
+          {row.original.nama_freelance && (
+            <button onClick={() => onFreelanceCost?.(row.original)} className={`p-1.5 rounded-lg border ${(row.original.biaya_freelance || 0) > 0 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-white text-gray-400 border-gray-300 hover:text-accent-primary'}`} title="Cost">
+              <DollarSign size={14} />
+            </button>
+          )}
+          <button onClick={() => onEdit?.(row.original)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100" title="Edit">
+            <Edit size={14} />
+          </button>
+          <button onClick={() => onDelete?.(row.original)} className="p-1.5 rounded-lg bg-red-50 text-red-600 border border-red-100 hover:bg-red-100" title="Hapus">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )
+    }
   ]
 
   const table = useReactTable({
     data,
     columns,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-      rowSelection,
-    },
+    state: { sorting, columnFilters, globalFilter },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   return (
-    <div className="neumorphic p-6">
-      {/* Header dengan Search */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-text-primary">
-          TABEL RINCIAN SHIPMENT
-        </h2>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={20} />
-          <input
-            type="text"
-            placeholder="Cari berdasarkan tanggal, nama, atau shipment..."
-            value={globalFilter ?? ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-          />
-        </div>
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="flex items-center gap-2 bg-azure-surface p-2 rounded-2xl shadow-neu-pressed border border-white/50">
+        <Search className="text-text-muted ml-2" size={20} />
+        <input
+          type="text"
+          value={globalFilter ?? ''}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Cari data shipment..."
+          className="bg-transparent border-none outline-none text-sm w-full h-10 text-text-primary"
+        />
       </div>
 
-      {/* Tabel */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-azure-bg">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left text-sm font-semibold text-text-primary border-b border-azure-shadow-dark"
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {{
-                          asc: ' ↑',
-                          desc: ' ↓',
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </div>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-azure-bg/50 border-b border-azure-shadow-dark/20">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 text-sm text-text-secondary">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      {/* --- UNIFIED TABLE VIEW (DESKTOP & MOBILE) --- */}
+      <div className="bg-azure-surface rounded-2xl shadow-neu-flat border border-white/40 overflow-hidden">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-transparent">
+          <table className="w-full text-sm text-left border-collapse min-w-max">
+            <thead className="bg-slate-300 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b-2 border-slate-400">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  <th className="px-4 py-4 w-10 text-center border-r border-slate-400/30">No</th>
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id} className="px-4 py-4 whitespace-nowrap">
+                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-slate-300">
+              {table.getRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-text-muted italic">
+                    Data tidak ditemukan dalam periode ini.
                   </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map((row, index) => (
+                  <tr key={row.id} className="hover:bg-white/50 transition-colors">
+                    <td className="px-4 py-3 text-center text-text-secondary text-xs border-r border-slate-200/50">
+                      {index + 1 + (table.getState().pagination.pageIndex * table.getState().pagination.pageSize)}
+                    </td>
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="px-4 py-3 text-text-primary">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-6">
-        <div className="text-sm text-text-secondary">
-          Menampilkan {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )} dari {table.getFilteredRowModel().rows.length} data
-        </div>
-        <div className="flex items-center space-x-2">
+      {/* Pagination Container */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-2">
+        <span className="text-xs font-bold text-text-secondary bg-slate-200/50 px-3 py-1 rounded-full">
+          Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()}
+        </span>
+        
+        <div className="flex items-center gap-2">
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-2 rounded-lg border border-azure-shadow-dark disabled:opacity-50 disabled:cursor-not-allowed hover:bg-azure-bg"
+            className="p-2.5 rounded-xl bg-azure-surface shadow-neu-flat disabled:opacity-30 hover:shadow-neu-pressed transition-all"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={18} />
           </button>
-          <span className="text-sm text-text-primary">
-            Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()}
-          </span>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="p-2 rounded-lg border border-azure-shadow-dark disabled:opacity-50 disabled:cursor-not-allowed hover:bg-azure-bg"
-          >
-            <ChevronRight size={16} />
-          </button>
+          
           <select
             value={table.getState().pagination.pageSize}
             onChange={(e) => table.setPageSize(Number(e.target.value))}
-            className="px-3 py-1 border border-azure-shadow-dark rounded-lg text-sm"
+            className="px-3 py-2 rounded-xl bg-azure-surface shadow-neu-inset text-xs font-bold outline-none cursor-pointer"
           >
-            {[10, 15, 20, 30, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Tampilkan {pageSize}
-              </option>
+            {[10, 20, 50].map(pageSize => (
+              <option key={pageSize} value={pageSize}>Tampil {pageSize}</option>
             ))}
           </select>
+
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="p-2.5 rounded-xl bg-azure-surface shadow-neu-flat disabled:opacity-30 hover:shadow-neu-pressed transition-all"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
     </div>

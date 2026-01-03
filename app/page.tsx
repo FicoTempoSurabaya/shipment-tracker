@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Truck, Eye, EyeOff, Info } from 'lucide-react'
+import { Truck, Eye, EyeOff, Info, ArrowRight } from 'lucide-react'
 import FreelanceShipmentModal from '@/components/modals/FreelanceShipmentModal'
 
 export default function LoginPage() {
@@ -47,44 +47,51 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative">
         
-        {/* Main Card */}
-        <div className="w-full max-w-md bg-azure-surface rounded-nm shadow-neumorphic p-8 sm:p-10 animate-scale-in border border-white/50 backdrop-blur-sm">
+        {/* --- MAIN LOGIN CARD --- */}
+        <div className="w-full max-w-md bg-azure-surface rounded-3xl shadow-neu-flat p-8 sm:p-12 animate-scale-in border border-white/40">
           
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <div className="neumorphic-icon w-20 h-20 animate-fade-in">
-                <Truck className="h-10 w-10 text-accent-primary drop-shadow-md" />
-              </div>
+          <div className="flex flex-col items-center text-center mb-10 space-y-4">
+            {/* Logo Icon Container */}
+            <div className="w-24 h-24 rounded-full bg-azure-surface shadow-neu-flat flex items-center justify-center text-accent-primary animate-float mb-2">
+              <Truck strokeWidth={1.5} className="w-10 h-10 drop-shadow-sm" />
             </div>
-            <h1 className="text-3xl font-bold text-text-primary mb-2 tracking-tight">
-              Selamat Datang
-            </h1>
-            <p className="text-text-secondary text-sm font-medium">
-              Shipment Tracking Report & <br /> Engagement Support System
-            </p>
+            
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+                Selamat Datang
+              </h1>
+              <p className="text-text-secondary text-sm font-medium leading-relaxed">
+                Silakan masuk untuk mengakses<br/>Shipment Tracker System
+              </p>
+            </div>
           </div>
 
           {/* Form Login */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-1 animate-slide-up animate-delay-100">
-              <label className="block text-sm font-semibold text-text-primary ml-1">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            
+            {/* Username Input Group */}
+            <div className="space-y-2 animate-fade-up animate-delay-100">
+              <label className="text-xs font-bold text-text-secondary uppercase tracking-wider ml-3">
                 Username
               </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="neumorphic-input transition-all duration-300 hover:shadow-neumorphic-inset"
-                placeholder="Masukkan username anda"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-azure-surface rounded-2xl px-6 py-4 text-text-primary font-medium placeholder-text-muted outline-none shadow-neu-pressed focus:shadow-neu-pressed-sm transition-all duration-300 border-2 border-transparent focus:border-white/50"
+                  placeholder="Ketik username anda..."
+                  required
+                />
+              </div>
             </div>
 
-            <div className="space-y-1 animate-slide-up animate-delay-200">
-              <label className="block text-sm font-semibold text-text-primary ml-1">
+            {/* Password Input Group */}
+            <div className="space-y-2 animate-fade-up animate-delay-200">
+              <label className="text-xs font-bold text-text-secondary uppercase tracking-wider ml-3">
                 Password
               </label>
               <div className="relative group">
@@ -92,15 +99,14 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="neumorphic-input pr-12 transition-all duration-300 hover:shadow-neumorphic-inset"
-                  placeholder="Masukkan password anda"
+                  className="w-full bg-azure-surface rounded-2xl px-6 py-4 text-text-primary font-medium placeholder-text-muted outline-none shadow-neu-pressed focus:shadow-neu-pressed-sm transition-all duration-300 border-2 border-transparent focus:border-white/50 pr-14"
+                  placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-accent-primary transition-colors focus:outline-none"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-5 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-accent-primary transition-colors p-1"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -111,48 +117,56 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Error Message */}
             {error && (
-              <div className="p-4 rounded-nm-sm bg-warning-bg border border-warning-bg/50 text-warning-text text-sm flex items-center gap-2 animate-fade-in shadow-sm">
-                 <Info className="h-4 w-4 shrink-0" />
-                 <span>{error}</span>
+              <div className="animate-fade-in p-4 rounded-xl bg-error-bg shadow-neu-pressed-sm border border-error-bg text-error-text text-sm flex items-center gap-3">
+                 <Info className="h-5 w-5 shrink-0" />
+                 <span className="font-medium">{error}</span>
               </div>
             )}
 
-            <div className="pt-2 animate-slide-up animate-delay-300">
+            {/* Submit Button */}
+            <div className="pt-2 animate-fade-up animate-delay-300">
               <button
                 type="submit"
                 disabled={loading}
-                className="neumorphic-btn neumorphic-btn-primary w-full group relative overflow-hidden"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-accent-gradient-start to-accent-gradient-end text-white font-bold shadow-neu-flat hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {loading ? (
                     <>
-                      <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                      Memproses...
+                      <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      <span>Memproses...</span>
                     </>
                   ) : (
-                    'Masuk Sekarang'
+                    <>
+                      <span>Masuk Sekarang</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
                   )}
                 </span>
-                {/* Shine Effect on Hover */}
+                {/* Shine Effect */}
                 <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-0" />
               </button>
             </div>
           </form>
 
           {/* Footer Actions */}
-          <div className="mt-8 pt-6 border-t border-azure-shadow-dark/10 flex flex-col items-center gap-4 animate-fade-in animate-delay-300">
+          <div className="mt-10 flex flex-col items-center gap-6 animate-fade-up animate-delay-300">
             <button
               onClick={() => setShowFreelanceModal(true)}
-              className="text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors duration-300 flex items-center gap-1 group"
+              className="group flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors duration-300"
             >
-              Masuk sebagai <span className="underline decoration-transparent group-hover:decoration-accent-primary underline-offset-4 transition-all">Freelance</span>?
+              <span>Masuk sebagai</span>
+              <span className="px-3 py-1 rounded-lg bg-azure-surface shadow-neu-flat group-hover:shadow-neu-pressed transition-all duration-300 text-accent-primary font-bold">
+                Freelance
+              </span>
             </button>
             
-            {/* Disclaimer Note */}
-            <div className="w-full p-4 rounded-nm-sm bg-azure-bg/50 shadow-neumorphic-inset border border-white/20 text-xs text-text-muted text-center leading-relaxed">
-              <p>
-                Sistem tertutup. Registrasi dan pemulihan akun dikelola sepenuhnya oleh administrator.
+            {/* Disclaimer */}
+            <div className="w-full text-center">
+              <p className="text-[10px] text-text-muted/70 font-medium tracking-wide">
+                SYSTEM RESTRICTED • ADMIN ONLY
               </p>
             </div>
           </div>

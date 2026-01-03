@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   LayoutDashboard, 
   User, 
@@ -8,7 +8,8 @@ import {
   HelpCircle, 
   LogOut,
   ChevronLeft,
-  ChevronRight,
+  Menu,
+  X,
   Truck
 } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -19,11 +20,16 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ userName }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
+  // Auto close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
   const handleLogout = async () => {
-    // Efek visual feedback sebelum logout
     const btn = document.getElementById('logout-btn')
     if (btn) btn.style.transform = 'scale(0.95)'
     
@@ -37,96 +43,153 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: User, label: 'Profile', path: '/admin/profile' },
     { icon: FileText, label: 'Rekap Shipment', path: '/admin/rekap-shipment' },
-    { icon: HelpCircle, label: 'Manajemen Quiz', path: '/admin/quiz' }, // Label diperjelas
+    { icon: HelpCircle, label: 'Manajemen Quiz', path: '/admin/quiz' },
   ]
 
   return (
-    <aside 
-      className={`
-        relative h-screen bg-sky-50 z-40 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]
-        border-r border-white/40 shadow-xl shadow-slate-200/50
-        ${collapsed ? 'w-24' : 'w-72'}
-      `}
-    >
-      {/* --- Header Section --- */}
-      <div className="p-6 mb-2 flex items-center justify-between relative">
-        <div className={`flex items-center gap-3 transition-opacity duration-300 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-          <div className="neumorphic-icon w-10 h-10 shrink-0">
-            <Truck className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-slate-800 leading-tight">Admin Panel</h2>
-            <p className="text-xs text-slate-500 font-medium truncate w-32">Halo, {userName}</p>
+    <>
+      {/* --- MOBILE HAMBURGER BUTTON (Visible only on mobile) --- */}
+      <button 
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-40 p-3 rounded-xl bg-azure-surface text-text-primary shadow-neu-flat md:hidden hover:text-accent-primary transition-all active:scale-95"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* --- MOBILE OVERLAY (Glass Effect) --- */}
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden animate-fade-in"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* --- SIDEBAR CONTAINER --- */}
+      <aside 
+        className={`
+          fixed md:static inset-y-0 left-0 z-50
+          h-screen bg-azure-surface
+          transition-all duration-300 ease-in-out
+          ${collapsed ? 'w-24' : 'w-72'}
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          flex flex-col border-r border-white/50 shadow-2xl md:shadow-none
+        `}
+      >
+        {/* --- HEADER / TOGGLE AREA (Modified) --- */}
+        {/* Area ini sekarang clickable untuk toggle collapse di desktop */}
+        <div className="h-24 relative flex items-center justify-center">
+          <button 
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full h-full flex items-center justify-center gap-3 group outline-none"
+            title={collapsed ? "Expand Menu" : "Collapse Menu"}
+          >
+            {/* Logo Icon */}
+            <div className={`
+              w-10 h-10 rounded-xl bg-gradient-to-br from-accent-primary to-blue-600 text-white flex items-center justify-center shadow-lg
+              transition-transform duration-300 group-hover:scale-110 group-active:scale-95
+            `}>
+              <Truck size={20} />
+            </div>
+
+            {/* Logo Text & Collapse Indicator */}
+            {!collapsed && (
+              <div className="animate-fade-in flex flex-col items-start">
+                <h1 className="text-xl font-bold text-text-primary tracking-tight leading-none">
+                  Tracker<span className="text-accent-primary">.io</span>
+                </h1>
+                {/* Visual Hint untuk Collapse */}
+                <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                   <span className="text-[10px] text-text-secondary font-medium uppercase tracking-wider">Minimize</span>
+                   <ChevronLeft size={10} className="text-accent-primary" />
+                </div>
+              </div>
+            )}
+            
+            {/* Close Button (Mobile Only - Tetap ada untuk UX mobile yang baik) */}
+            <div 
+              onClick={(e) => { e.stopPropagation(); setMobileOpen(false); }}
+              className="absolute top-8 right-6 md:hidden text-text-secondary p-2 active:scale-90 transition-transform"
+            >
+              <X size={24} />
+            </div>
+          </button>
+        </div>
+
+        {/* --- USER INFO (Neumorphic Inset) --- */}
+        <div className={`mx-4 mb-6 transition-all duration-300 ${collapsed ? 'px-2' : 'px-4'}`}>
+          <div className={`
+            bg-azure-surface rounded-2xl p-4 flex items-center gap-3
+            shadow-neu-pressed border border-white/20 overflow-hidden
+            ${collapsed ? 'justify-center' : ''}
+          `}>
+            <div className="w-8 h-8 rounded-full bg-accent-primary/20 text-accent-primary flex items-center justify-center font-bold shrink-0">
+              {userName?.charAt(0).toUpperCase()}
+            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-text-primary truncate">{userName}</p>
+                <p className="text-[10px] text-text-secondary uppercase tracking-wider">Administrator</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Toggle Button - Floating on edge */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className={`
-            neumorphic-btn !p-2 !w-10 !h-10 !rounded-xl
-            absolute top-6 ${collapsed ? 'left-1/2 -translate-x-1/2' : 'right-4'}
-            z-50
-          `}
-          aria-label={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
-      </div>
+        {/* --- NAVIGATION MENU --- */}
+        <nav className="flex-1 px-4 space-y-3 overflow-y-auto custom-scrollbar py-2">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.path
+            return (
+              <button
+                key={item.path}
+                onClick={() => router.push(item.path)}
+                className={`
+                  w-full relative flex items-center p-3.5 rounded-2xl transition-all duration-300 group
+                  ${isActive 
+                    ? 'text-accent-primary shadow-neu-pressed font-bold' 
+                    : 'text-text-secondary shadow-neu-flat hover:shadow-neu-pressed hover:text-text-primary bg-azure-surface'
+                  }
+                  ${collapsed ? 'justify-center' : ''}
+                `}
+                title={collapsed ? item.label : ''}
+              >
+                <item.icon 
+                  size={22} 
+                  className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} 
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
+                
+                {!collapsed && (
+                  <span className="ml-4 text-sm whitespace-nowrap animate-fade-in">
+                    {item.label}
+                  </span>
+                )}
+                
+                {/* Active Indicator Dot */}
+                {isActive && !collapsed && (
+                  <div className="absolute right-4 w-2 h-2 rounded-full bg-accent-primary shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                )}
+              </button>
+            )
+          })}
+        </nav>
 
-      {/* --- Navigation Menu --- */}
-      <nav className="px-4 space-y-4">
-        {menuItems.map((item) => {
-          const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`)
-          
-          return (
-            <button
-              key={item.path}
-              onClick={() => router.push(item.path)}
-              className={`
-                group flex items-center w-full p-3 rounded-2xl transition-all duration-300 relative overflow-hidden
-                ${isActive 
-                  ? 'text-sky-600 shadow-[inset_4px_4px_8px_#BDCFE0,inset_-4px_-4px_8px_#FFFFFF]' 
-                  : 'text-slate-600 hover:text-sky-500 hover:-translate-y-0.5 shadow-[6px_6px_12px_#BDCFE0,-6px_-6px_12px_#FFFFFF]'
-                }
-                ${collapsed ? 'justify-center' : 'justify-start'}
-              `}
-            >
-              <div className={`relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
-                <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-              </div>
-              
-              {!collapsed && (
-                <span className={`ml-3 font-semibold text-sm whitespace-nowrap transition-all duration-300 ${isActive ? 'font-bold' : ''}`}>
-                  {item.label}
-                </span>
-              )}
-              
-              {/* Active Indicator Bar (Left) */}
-              {isActive && !collapsed && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-sky-500 rounded-r-md" />
-              )}
-            </button>
-          )
-        })}
-      </nav>
-
-      {/* --- Footer / Logout --- */}
-      <div className="absolute bottom-8 left-0 w-full px-4">
-        <button
-          id="logout-btn"
-          onClick={handleLogout}
-          className={`
-            group flex items-center w-full p-3 rounded-2xl text-red-500 transition-all duration-300
-            hover:bg-red-50 hover:shadow-[inset_4px_4px_8px_rgba(239,68,68,0.1),inset_-4px_-4px_8px_rgba(255,255,255,0.8)]
-            shadow-[6px_6px_12px_#BDCFE0,-6px_-6px_12px_#FFFFFF] border border-white/20
-            ${collapsed ? 'justify-center' : 'justify-start'}
-          `}
-        >
-          <LogOut size={22} className="transition-transform group-hover:-translate-x-1" />
-          {!collapsed && <span className="ml-3 font-semibold text-sm">Keluar Aplikasi</span>}
-        </button>
-      </div>
-    </aside>
+        {/* --- FOOTER (Hanya Tombol Logout) --- */}
+        <div className="p-4 mt-auto">
+          <button
+            id="logout-btn"
+            onClick={handleLogout}
+            className={`
+              w-full flex items-center p-3 rounded-2xl text-error-text transition-all duration-300
+              hover:bg-error-bg/10 shadow-neu-flat hover:shadow-neu-pressed group
+              ${collapsed ? 'justify-center' : ''}
+            `}
+            title={collapsed ? "Keluar Aplikasi" : ""}
+          >
+            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+            {!collapsed && <span className="ml-3 font-bold text-sm">Keluar</span>}
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }

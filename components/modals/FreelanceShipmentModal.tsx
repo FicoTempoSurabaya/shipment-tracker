@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Package, Loader2 } from 'lucide-react'
+import { Package, Loader2, X, Calendar, User, Truck, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 
 interface FreelanceShipmentModalProps {
@@ -39,183 +39,205 @@ export default function FreelanceShipmentModal({
           terkirim: parseInt(formData.terkirim),
           gagal: parseInt(formData.gagal),
           shipment_id: parseInt(formData.shipment_id)
-        })
+        }),
       })
 
       if (response.ok) {
-        alert('Shipment berhasil disimpan!')
+        alert('Data berhasil disimpan')
         onClose()
-        resetForm()
+        // Reset form
+        setFormData({
+          nama_freelance: '',
+          tanggal: new Date().toISOString().split('T')[0],
+          shipment_id: '',
+          jumlah_toko: '',
+          terkirim: '',
+          gagal: '',
+          alasan: ''
+        })
       } else {
-        const error = await response.json()
-        alert(error.error || 'Gagal menyimpan data')
+        alert('Gagal menyimpan data')
       }
     } catch (error) {
-      console.error('Error:', error)
       alert('Terjadi kesalahan')
     } finally {
       setLoading(false)
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      nama_freelance: '',
-      tanggal: new Date().toISOString().split('T')[0],
-      shipment_id: '',
-      jumlah_toko: '',
-      terkirim: '',
-      gagal: '',
-      alasan: ''
-    })
-  }
+  // Helper untuk style label input
+  const Label = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
+    <label className="flex items-center gap-2 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 ml-1">
+      {Icon && <Icon className="w-3 h-3" />}
+      {children}
+    </label>
+  )
+
+  // Class string untuk input Neumorphism (Pressed effect)
+  const inputClass = "w-full bg-azure-surface rounded-xl px-4 py-3 text-text-primary font-medium placeholder-text-muted outline-none shadow-neu-pressed focus:shadow-neu-pressed-sm transition-all duration-300 border-transparent focus:border-white/50"
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Input Shipment Freelance"
-      size="md"
-    >
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          {/* Nama Freelance */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Nama Freelance *
-            </label>
-            <input
-              type="text"
-              value={formData.nama_freelance}
-              onChange={(e) => setFormData({...formData, nama_freelance: e.target.value})}
-              required
-              className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-              placeholder="Masukkan nama freelance"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tanggal */}
+    <Modal isOpen={isOpen} onClose={onClose}>
+      {/* WRAPPER UTAMA
+         Kita pastikan backgroundnya sesuai tema (Azure Surface)
+         dan memberikan padding yang cukup.
+      */}
+      <div className="bg-azure-surface p-6 sm:p-8 rounded-3xl text-text-primary max-h-[90vh] overflow-y-auto custom-scrollbar">
+        
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-azure-surface shadow-neu-flat flex items-center justify-center text-accent-primary">
+              <Package className="w-6 h-6" />
+            </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Tanggal *
-              </label>
+              <h2 className="text-xl font-bold text-text-primary">Input Freelance</h2>
+              <p className="text-xs text-text-secondary font-medium">Laporan pengiriman harian</p>
+            </div>
+          </div>
+          
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-azure-surface shadow-neu-flat hover:shadow-neu-pressed flex items-center justify-center text-text-muted hover:text-error-text transition-all duration-300"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* Row 1: Nama & Tanggal */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <Label icon={User}>Nama Freelance</Label>
+              <input
+                type="text"
+                required
+                value={formData.nama_freelance}
+                onChange={(e) => setFormData({...formData, nama_freelance: e.target.value})}
+                className={inputClass}
+                placeholder="Nama Lengkap"
+              />
+            </div>
+            <div>
+              <Label icon={Calendar}>Tanggal</Label>
               <input
                 type="date"
+                required
                 value={formData.tanggal}
                 onChange={(e) => setFormData({...formData, tanggal: e.target.value})}
-                required
-                className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
+                className={inputClass}
               />
             </div>
+          </div>
 
-            {/* Shipment ID */}
+          {/* Row 2: Shipment ID & Jumlah Toko */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Shipment ID *
-              </label>
+              <Label icon={Truck}>ID Shipment</Label>
               <input
                 type="number"
+                required
                 value={formData.shipment_id}
                 onChange={(e) => setFormData({...formData, shipment_id: e.target.value})}
-                required
-                className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-                placeholder="Masukkan shipment ID"
+                className={inputClass}
+                placeholder="Contoh: 1001"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Jumlah Toko */}
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Jumlah Toko *
-              </label>
+              <Label icon={Package}>Total Toko</Label>
               <input
                 type="number"
+                required
                 value={formData.jumlah_toko}
                 onChange={(e) => setFormData({...formData, jumlah_toko: e.target.value})}
-                required
-                className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-                placeholder="Jumlah toko"
-              />
-            </div>
-
-            {/* Terkirim */}
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Terkirim *
-              </label>
-              <input
-                type="number"
-                value={formData.terkirim}
-                onChange={(e) => setFormData({...formData, terkirim: e.target.value})}
-                required
-                className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-                placeholder="Jumlah terkirim"
-              />
-            </div>
-
-            {/* Gagal */}
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Gagal *
-              </label>
-              <input
-                type="number"
-                value={formData.gagal}
-                onChange={(e) => setFormData({...formData, gagal: e.target.value})}
-                required
-                className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-                placeholder="Jumlah gagal"
+                className={inputClass}
+                placeholder="0"
               />
             </div>
           </div>
 
-          {/* Alasan */}
+          {/* Row 3: Terkirim & Gagal (Visual Grouping) */}
+          <div className="p-4 rounded-2xl bg-azure-surface shadow-neu-flat border border-white/40">
+            <h3 className="text-sm font-bold text-text-secondary mb-4 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              STATUS PENGIRIMAN
+            </h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <Label icon={CheckCircle}>Terkirim</Label>
+                <input
+                  type="number"
+                  required
+                  value={formData.terkirim}
+                  onChange={(e) => setFormData({...formData, terkirim: e.target.value})}
+                  className={`${inputClass} text-green-600 font-bold`}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label icon={XCircle}>Gagal</Label>
+                <input
+                  type="number"
+                  required
+                  value={formData.gagal}
+                  onChange={(e) => setFormData({...formData, gagal: e.target.value})}
+                  className={`${inputClass} text-error-text font-bold`}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 4: Alasan */}
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Alasan Kegagalan (Opsional)
-            </label>
+            <Label>Catatan / Alasan Gagal</Label>
             <textarea
               value={formData.alasan}
               onChange={(e) => setFormData({...formData, alasan: e.target.value})}
               rows={3}
-              className="w-full px-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
-              placeholder="Masukkan alasan jika ada yang gagal"
+              className={`${inputClass} resize-none`}
+              placeholder="Tuliskan keterangan jika ada pengiriman yang gagal..."
             />
           </div>
-        </div>
 
-        {/* Footer Buttons */}
-        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-azure-shadow-dark">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="px-4 py-2 border border-azure-shadow-dark text-text-primary rounded-lg hover:bg-azure-bg disabled:opacity-50"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin mr-2" size={20} />
-                Menyimpan...
-              </>
-            ) : (
-              <>
-                <Package className="mr-2" size={20} />
-                Simpan Shipment
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Footer Buttons */}
+          <div className="flex items-center justify-end gap-4 pt-4 mt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-6 py-3 rounded-xl bg-azure-surface text-text-secondary font-bold shadow-neu-flat hover:shadow-neu-pressed hover:text-text-primary transition-all duration-300 text-sm"
+            >
+              Batal
+            </button>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-gradient-start to-accent-gradient-end text-white font-bold shadow-neu-flat hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative overflow-hidden group text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin w-4 h-4" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Simpan Data</span>
+                    <Package className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </span>
+              {/* Shine Effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-0" />
+            </button>
+          </div>
+
+        </form>
+      </div>
     </Modal>
   )
 }

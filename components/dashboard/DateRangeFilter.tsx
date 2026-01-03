@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Calendar, Filter } from 'lucide-react'
+import { Calendar, Filter, ArrowRight } from 'lucide-react'
 import { getDefaultDateRange } from '@/lib/utils'
 
 interface DateRangeFilterProps {
@@ -28,78 +28,58 @@ export default function DateRangeFilter({
     onDateChange(startDate, endDate)
   }
 
-  const handleReset = () => {
-    const defaultRange = getDefaultDateRange()
-    setStartDate(defaultRange.startDate)
-    setEndDate(defaultRange.endDate)
-    onDateChange(defaultRange.startDate, defaultRange.endDate)
-  }
+  // Style input Neumorphic (Pressed)
+  const inputClass = "w-full bg-azure-surface rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-primary font-medium outline-none shadow-neu-pressed focus:shadow-neu-pressed-sm transition-all duration-300 border-2 border-transparent focus:border-white/50"
 
   return (
-    <div className="neumorphic p-4 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <Filter size={20} className="text-text-secondary" />
-          <h3 className="font-semibold text-text-primary">Filter Periode</h3>
-        </div>
-        <button
-          onClick={handleReset}
-          className="text-sm text-accent-secondary hover:text-cyan-600"
-        >
-          Reset ke Default
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-2">
-            Tanggal Mulai
+    <div className="p-4 w-full">
+      <div className="flex flex-col sm:flex-row items-end gap-4">
+        
+        {/* Start Date */}
+        <div className="w-full sm:w-auto">
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 ml-1 block">
+            Dari Tanggal
           </label>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" size={16} />
             <input
               type="date"
               value={startDate.toISOString().split('T')[0]}
               onChange={(e) => setStartDate(new Date(e.target.value))}
-              className="w-full pl-10 pr-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
+              className={inputClass}
             />
           </div>
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-2">
-            Tanggal Selesai
+
+        {/* Separator Arrow (Visual Only) */}
+        <div className="hidden sm:flex pb-3 text-text-muted">
+           <ArrowRight size={16} />
+        </div>
+
+        {/* End Date */}
+        <div className="w-full sm:w-auto">
+          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 ml-1 block">
+            Sampai Tanggal
           </label>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={18} />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" size={16} />
             <input
               type="date"
               value={endDate.toISOString().split('T')[0]}
               onChange={(e) => setEndDate(new Date(e.target.value))}
-              className="w-full pl-10 pr-4 py-2 border border-azure-shadow-dark rounded-lg focus:outline-none focus:border-accent-primary"
+              className={inputClass}
             />
           </div>
         </div>
         
-        <div className="flex items-end">
-          <button
-            onClick={handleApply}
-            className="w-full py-2 px-4 bg-accent-primary text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Terapkan Filter
-          </button>
-        </div>
-      </div>
-      
-      <div className="mt-4 text-sm text-text-secondary">
-        <p>
-          Periode default: {defaultRange.startDate.toLocaleDateString('id-ID')} -{' '}
-          {defaultRange.endDate.toLocaleDateString('id-ID')}
-        </p>
-        <p className="text-xs mt-1">
-          Aturan cut-off 16-15: Jika hari ini {'<'} 16, periode = 16 bulan sebelumnya sampai 15 bulan ini.
-          Jika hari ini {'>'} 15, periode = 16 bulan ini sampai 15 bulan depan.
-        </p>
+        {/* Filter Button */}
+        <button
+          onClick={handleApply}
+          className="w-full sm:w-auto px-6 py-2.5 bg-azure-surface text-accent-primary font-bold rounded-xl shadow-neu-flat hover:shadow-neu-pressed hover:scale-95 transition-all duration-300 flex items-center justify-center gap-2 text-sm border border-white/40"
+        >
+          <Filter size={16} />
+          <span>Terapkan</span>
+        </button>
       </div>
     </div>
   )
