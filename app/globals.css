@@ -4,48 +4,131 @@
 
 @layer base {
   :root {
-    --azure-bg: #E6F0FA;
-    --azure-surface: #EDF4FB;
-    --azure-shadow-dark: #C5D6E8;
-    --azure-shadow-light: #FFFFFF;
-    --text-primary: #1F2A44;
-    --text-secondary: #5F6F86;
-    --accent-primary: #3B82F6;
-    --accent-secondary: #22D3EE;
-    --warning-bg: #FEE2E2;
-    --warning-accent: #EF4444;
-    --warning-text: #991B1B;
-    --warning-shadow: #F5BABA;
-    --caution-bg: #FEF9C3;
-    --caution-accent: #F59E0B;
-    --caution-text: #92400E;
-    --caution-shadow: #F2D88A;
+    --foreground-rgb: 30, 41, 59; /* Slate-800 */
+    --background-start-rgb: 224, 242, 254; /* Sky-100 */
+    --background-end-rgb: 234, 246, 255; 
+    
+    /* Shadow Variables - Hardcoded untuk stabilitas */
+    --shadow-light: #FFFFFF;
+    --shadow-dark: #BDCFE0;
   }
 
   body {
-    @apply bg-azure-bg text-text-primary;
+    /* Menggunakan standard utility: bg-sky-100 text-slate-800 */
+    @apply bg-sky-100 text-slate-800 antialiased;
+    background-image: linear-gradient(
+      to bottom right,
+      var(--background-start-rgb),
+      var(--background-end-rgb)
+    );
+    min-height: 100vh;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-sky-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-400/50 rounded-full hover:bg-sky-500/70 transition-colors;
   }
 }
 
 @layer components {
-  .neumorphic {
-    @apply bg-azure-surface rounded-2xl;
-    box-shadow: 
-      12px 12px 24px var(--azure-shadow-dark),
-      -12px -12px 24px var(--azure-shadow-light);
+  /* --- Neumorphic Card Base --- */
+  .neumorphic-card {
+    /* bg-sky-50 (Azure Surface equivalent) */
+    @apply bg-sky-50 rounded-3xl border border-white/40;
+    box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+    transition: all 0.3s ease-out;
   }
 
-  .neumorphic-inset {
-    @apply bg-azure-surface rounded-2xl;
-    box-shadow: 
-      inset 6px 6px 12px var(--azure-shadow-dark),
-      inset -6px -6px 12px var(--azure-shadow-light);
+  .neumorphic-card:hover {
+    @apply transform -translate-y-1;
+    box-shadow: 14px 14px 28px var(--shadow-dark), -14px -14px 28px var(--shadow-light);
   }
 
-  .neumorphic-flat {
-    @apply bg-azure-surface rounded-xl;
-    box-shadow: 
-      0 4px 6px -1px rgba(197, 214, 232, 0.3),
-      0 2px 4px -1px rgba(197, 214, 232, 0.2);
+  /* --- Neumorphic Button --- */
+  .neumorphic-btn {
+    @apply px-6 py-3 rounded-2xl font-semibold text-slate-800 
+           bg-sky-50 
+           flex items-center justify-center gap-2
+           transition-all duration-300 ease-out 
+           border border-white/20 active:scale-95;
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+  }
+
+  .neumorphic-btn:hover {
+    @apply text-sky-500 -translate-y-0.5;
+    box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+  }
+
+  .neumorphic-btn:active {
+    @apply translate-y-0;
+    box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+  }
+
+  .neumorphic-btn-primary {
+    /* Menggunakan standard colors: Sky-500 & Sky-600 */
+    @apply bg-sky-500 text-white border-none;
+    box-shadow: 6px 6px 12px rgba(14, 165, 233, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.8);
+  }
+  
+  .neumorphic-btn-primary:hover {
+    @apply bg-sky-600 text-white;
+    box-shadow: 8px 8px 16px rgba(14, 165, 233, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.9);
+  }
+
+  .neumorphic-btn-danger {
+    @apply text-red-500 hover:bg-red-50;
+  }
+
+  /* --- Neumorphic Form Elements --- */
+  .neumorphic-input {
+    @apply w-full px-5 py-3 rounded-2xl 
+           bg-sky-50 text-slate-800 
+           outline-none
+           border border-transparent
+           focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/30
+           transition-all duration-200 placeholder:text-slate-400;
+    box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+  }
+  
+  .neumorphic-input:hover {
+      box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+  }
+
+  /* --- Icon Wrappers --- */
+  .neumorphic-icon {
+    @apply p-3 rounded-full bg-sky-50 
+           text-sky-500 flex items-center justify-center;
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+  }
+  
+  /* --- Layout Utilities --- */
+  .glass-panel {
+    @apply bg-white/30 backdrop-blur-md border border-white/40;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animate-delay-300 {
+    animation-delay: 300ms;
   }
 }
