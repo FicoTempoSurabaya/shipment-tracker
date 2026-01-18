@@ -1,113 +1,251 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react';
-import { createShipmentAdmin, ActionState } from '@/app/dashboard/actions';
+import { useState } from 'react';
 import { X, Save, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { createShipment } from '@/app/shipment-actions'; 
 import { DriverOption } from '@/types';
 
-interface ModalProps {
+interface AdminInputShipmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   drivers: DriverOption[];
 }
 
-export default function AdminInputShipmentModal({ isOpen, onClose, drivers }: ModalProps) {
-  const [state, action, isPending] = useActionState<ActionState, FormData>(createShipmentAdmin, null);
-  const [jmlToko, setJmlToko] = useState(0);
-  const [terkirim, setTerkirim] = useState(0);
-  const gagal = Math.max(0, jmlToko - terkirim);
+export default function AdminInputShipmentModal({ isOpen, onClose, drivers }: AdminInputShipmentModalProps) {
+  // Initial State
+  const initialForm = {
+    shipment_id: '',
+    driver_type: 'regular', // 'regular' or 'freelance'
+    user_id: '',
+    nama_freelance: '',
+    tanggal: new Date().toISOString().slice(0, 10),
+    jumlah_toko: 0,
+    terkirim: 0,
+    alasan: ''
+  };
 
-  useEffect(() => {
-    if (state?.success) {
-      alert(state.message);
-      onClose();
+  const [formData, setFormData] = useState(initialForm);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Auto Hitung Gagal
+  const gagal = Math.max(0, formData.jumlah_toko - formData.terkirim);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const payload = {
+        ...formData,
+        gagal: gagal,
+        // Logic switch User vs Freelance
+        user_id: formData.driver_type === 'regular' ? Number(formData.user_id) : null,
+        nama_freelance: formData.driver_type === 'freelance' ? formData.nama_freelance : null
+      };
+
+      const result = await createShipment(payload);
+
+      if (result.success) {
+        onClose();
+        setFormData(initialForm); // Reset form
+        window.location.reload(); 
+      } else {
+        setError(result.message || 'Gagal menyimpan data');
+      }
+    } catch { // FIX: Menghapus variabel 'err' yang tidak digunakan
+      setError('Terjadi kesalahan sistem');
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, onClose]);
+  };
+
+  // --- STYLING ---
+  const inputClass = "w-full p-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400";
+  const labelClass = "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5";
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[90vh] border border-slate-200"
-            >
-              <div className="bg-slate-800 p-5 flex justify-between items-center shrink-0">
-                <h3 className="text-white font-bold text-lg">Input Data Admin</h3>
-                <button onClick={onClose} className="text-slate-400 hover:text-white transition"><X /></button>
+    // FIX: z-[60] -> z-60
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-slate-50 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] border border-slate-200">
+        
+        {/* Header */}
+        <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
+          <h2 className="text-lg font-black text-slate-800">INPUT DATA ADMIN</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-rose-500 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Form Scrollable */}
+        <div className="p-6 overflow-y-auto">
+          {error && (
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-sm font-bold flex items-center gap-2">
+              <AlertCircle size={18} />
+              {error}
+            </div>
+          )}
+
+          <form id="inputForm" onSubmit={handleSubmit} className="space-y-5">
+            
+            {/* ROW 1: TANGGAL & ID */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className={labelClass}>Tanggal</label>
+                    <input 
+                        type="date" 
+                        required
+                        className={inputClass}
+                        value={formData.tanggal}
+                        onChange={e => setFormData({...formData, tanggal: e.target.value})}
+                    />
+                </div>
+                <div>
+                    <label className={labelClass}>ID Shipment</label>
+                    <input 
+                        type="text" 
+                        required
+                        placeholder="10 Digit Angka"
+                        className={inputClass}
+                        maxLength={10}
+                        value={formData.shipment_id}
+                        onChange={e => setFormData({...formData, shipment_id: e.target.value.replace(/\D/g, '')})}
+                    />
+                </div>
+            </div>
+
+            {/* ROW 2: TIPE DRIVER SWITCH */}
+            <div>
+               <label className={labelClass}>Tipe Personil</label>
+               <div className="flex bg-slate-200 p-1 rounded-xl">
+                 <button 
+                   type="button"
+                   onClick={() => setFormData({...formData, driver_type: 'regular'})}
+                   className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${formData.driver_type === 'regular' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                 >
+                   DRIVER TETAP
+                 </button>
+                 <button 
+                   type="button"
+                   onClick={() => setFormData({...formData, driver_type: 'freelance'})}
+                   className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${formData.driver_type === 'freelance' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                 >
+                   FREELANCE
+                 </button>
+               </div>
+            </div>
+
+            {/* ROW 3: INPUT NAMA (CONDITIONAL) */}
+            {formData.driver_type === 'regular' ? (
+              <div>
+                <label className={labelClass}>Pilih Driver</label>
+                <select 
+                  required
+                  className={inputClass}
+                  value={formData.user_id}
+                  onChange={e => setFormData({...formData, user_id: e.target.value})}
+                >
+                  <option value="">-- Pilih Driver --</option>
+                  {drivers.map(d => (
+                    <option key={d.user_id} value={d.user_id}>{d.nama_lengkap}</option>
+                  ))}
+                </select>
               </div>
-
-              <div className="p-6 overflow-y-auto">
-                <form action={action} className="space-y-4">
-                  {state?.error && (
-                    <div className="bg-rose-50 text-rose-600 p-3 rounded-xl text-sm flex items-center gap-2 border border-rose-100">
-                      <AlertCircle size={16} /> {state.error}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Pilih Driver</label>
-                    <select name="user_id" required className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50">
-                      <option value="">-- Pilih Driver --</option>
-                      {drivers.map(d => (
-                        <option key={d.user_id} value={d.user_id}>{d.nama_lengkap}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">Tanggal</label>
-                      <input type="date" name="tanggal" required className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">ID Shipment (10 Digit)</label>
-                      <input 
-                        type="text" name="shipment_id" required inputMode="numeric" minLength={10} maxLength={10} pattern="\d{10}"
-                        onKeyPress={(e) => { if (!/[0-9]/.test(e.key)) e.preventDefault(); }}
-                        placeholder="10 digit angka" className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase">Total Toko</label>
-                      <input type="number" name="jumlah_toko" min="0" required onChange={(e) => setJmlToko(Number(e.target.value))} className="w-full mt-1 p-2 border border-slate-300 rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-emerald-600 uppercase">Terkirim</label>
-                      <input type="number" name="terkirim" min="0" max={jmlToko} required onChange={(e) => setTerkirim(Number(e.target.value))} className="w-full mt-1 p-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-rose-600 uppercase">Gagal</label>
-                      <input type="number" readOnly value={gagal} className="w-full mt-1 p-2 bg-slate-200 text-slate-600 border border-slate-300 rounded-lg font-bold" />
-                    </div>
-                  </div>
-
-                  {gagal > 0 && (
-                     <textarea name="alasan" required rows={2} className="w-full p-3 border border-rose-300 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none" placeholder="Berikan alasan keterlambatan/kegagalan..." />
-                  )}
-
-                  <div className="pt-4 flex justify-end gap-3 shrink-0">
-                    <button type="button" onClick={onClose} className="px-6 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-colors">Batal</button>
-                    <button type="submit" disabled={isPending} className="px-8 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95 shadow-lg shadow-slate-800/20">
-                      {isPending ? 'Menyimpan...' : <><Save size={18} /> Simpan Data</>}
-                    </button>
-                  </div>
-                </form>
+            ) : (
+              <div>
+                <label className={labelClass}>Nama Freelance</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Masukkan Nama Lengkap"
+                  className={inputClass}
+                  value={formData.nama_freelance}
+                  onChange={e => setFormData({...formData, nama_freelance: e.target.value})}
+                />
               </div>
-            </motion.div>
-          </div>
-        </>
-      )}
-    </AnimatePresence>
+            )}
+
+            {/* ROW 4: STATISTIK (AUTO CALC GAGAL) */}
+            <div className="grid grid-cols-3 gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+               <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Total</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    value={formData.jumlah_toko}
+                    onChange={e => setFormData({...formData, jumlah_toko: Number(e.target.value)})}
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-emerald-600 uppercase mb-1">Terkirim</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    max={formData.jumlah_toko}
+                    className="w-full p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 font-bold focus:ring-2 focus:ring-emerald-500 outline-none"
+                    value={formData.terkirim}
+                    onChange={e => setFormData({...formData, terkirim: Number(e.target.value)})}
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-rose-600 uppercase mb-1">Gagal</label>
+                  {/* READ ONLY - Auto Calculated */}
+                  <input 
+                    type="number" 
+                    readOnly
+                    className="w-full p-2 bg-slate-200 border border-slate-300 rounded-lg text-slate-500 font-bold cursor-not-allowed"
+                    value={gagal}
+                  />
+               </div>
+            </div>
+
+            {/* ROW 5: ALASAN (Muncul jika ada gagal) */}
+            {gagal > 0 && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className={labelClass}>Alasan Gagal / Retur</label>
+                <textarea 
+                  required
+                  rows={2}
+                  className={`${inputClass} border-rose-300 focus:ring-rose-500`}
+                  placeholder="Wajib diisi: Alasan retur..."
+                  value={formData.alasan}
+                  onChange={e => setFormData({...formData, alasan: e.target.value})}
+                />
+              </div>
+            )}
+
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 border-t border-slate-200 bg-white flex gap-3">
+           <button 
+             type="button" 
+             onClick={onClose}
+             className="flex-1 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors"
+           >
+             Batal
+           </button>
+           <button 
+             type="submit" 
+             form="inputForm"
+             disabled={isLoading}
+             // FIX: flex-[2] -> flex-2
+             className="flex-2 py-3 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+           >
+             {isLoading ? 'Menyimpan...' : (
+               <>
+                 <Save size={18} /> Simpan Data
+               </>
+             )}
+           </button>
+        </div>
+
+      </div>
+    </div>
   );
 }

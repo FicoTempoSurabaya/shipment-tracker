@@ -27,9 +27,6 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // Helper untuk menentukan apakah link aktif
-  const isActive = (path: string) => pathname === path;
-
   const handleLogoutAction = async () => {
     await logout();
   };
@@ -39,29 +36,20 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
       <AnimatePresence mode="wait">
         {isOpen && (
           <>
-            {/* Overlay untuk Mobile */}
+            {/* Overlay Mobile */}
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
               className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
             />
             
-            {/* Sidebar Container */}
+            {/* Sidebar */}
             <motion.aside 
-              initial={{ x: -300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              transition={{ 
-                type: 'spring', 
-                damping: 25, 
-                stiffness: 200,
-                mass: 0.8
-              }}
+              initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200, mass: 0.8 }}
               className="fixed left-0 top-0 h-full w-72 bg-slate-900 text-white z-50 flex flex-col shadow-[10px_0_30px_rgba(0,0,0,0.3)] border-r border-white/5"
             >
-              {/* Header Sidebar */}
+              {/* Header */}
               <div className="p-8 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-indigo-600 rounded-xl">
@@ -71,42 +59,40 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
                     SHIPMENT<span className="text-indigo-500">.</span>
                   </h1>
                 </div>
-                <button 
-                  onClick={() => setIsOpen(false)} 
-                  className="lg:hidden p-2 hover:bg-white/10 rounded-xl text-slate-400"
-                >
+                <button onClick={() => setIsOpen(false)} className="lg:hidden p-2 hover:bg-white/10 rounded-xl text-slate-400">
                   <ChevronLeft size={20}/>
                 </button>
               </div>
 
-              {/* Menu Sections */}
+              {/* Menu */}
               <div className="flex-1 px-4 py-2 space-y-6 overflow-y-auto">
                 <nav className="space-y-1.5">
-                  {/* DASHBOARD (ADMIN & REGULAR) */}
                   <SidebarLink 
                     href="/dashboard" 
                     icon={<LayoutDashboard size={18}/>} 
                     label="DASHBOARD" 
-                    active={isActive('/dashboard')} 
+                    active={pathname === '/dashboard'} 
                   />
 
-                  {/* PROFILE (COMING SOON) */}
+                  {/* PROFIL - SUDAH DIBUKA */}
                   <SidebarLink 
-                    href="#" 
+                    href="/dashboard/profile" 
                     icon={<User size={18}/>} 
                     label="PROFILE" 
-                    comingSoon
+                    active={pathname.startsWith('/dashboard/profile')}
                   />
 
-                  {/* MENU KHUSUS ADMIN */}
+                  {/* ADMIN ONLY MENU */}
                   {role === 'admin' && (
                     <>
+                      {/* REKAP SHIPMENT - SUDAH DIBUKA */}
                       <SidebarLink 
-                        href="#" 
+                        href="/dashboard/rekap" 
                         icon={<FileSpreadsheet size={18}/>} 
                         label="REKAP SHIPMENT" 
-                        comingSoon
+                        active={pathname.startsWith('/dashboard/rekap')}
                       />
+                      
                       <SidebarLink 
                         href="#" 
                         icon={<BrainCircuit size={18}/>} 
@@ -118,7 +104,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
                 </nav>
               </div>
 
-              {/* LOG OUT SECTION */}
+              {/* Footer */}
               <div className="p-6 border-t border-white/5">
                 <button 
                   onClick={() => setShowLogoutConfirm(true)}
@@ -148,6 +134,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
   );
 }
 
+// ... Komponen SidebarLink tetap sama ...
 interface SidebarLinkProps {
   href: string;
   icon: React.ReactNode;

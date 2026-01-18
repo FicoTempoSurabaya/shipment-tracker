@@ -1,27 +1,27 @@
+// app/layout.tsx
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google"; // Font modern
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const fontSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Shipment Tracker",
-  description: "Modern Logistics Dashboard",
+  title: "Shipment Tracker - Aurora v4",
+  description: "Minimalist Management System",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="id">
-      <body className={`${fontSans.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
-        {children}
+    <html lang="en" className="dark">
+      <body className={inter.className}>
+        <div className="aurora-container" />
+        <main className="relative z-10 min-h-screen">
+          {children}
+        </main>
       </body>
     </html>
   );

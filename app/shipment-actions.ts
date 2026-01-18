@@ -3,7 +3,27 @@
 import pool from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
-// --- UTILS: Ambil Daftar Driver (Untuk Dropdown) ---
+// --- DEFINISI TIPE (Agar tidak menggunakan 'any') ---
+
+interface ShipmentPayload {
+  submit_id?: number;
+  shipment_id: string;
+  user_id?: string | number | null;
+  nama_freelance?: string | null;
+  tanggal: string;
+  jumlah_toko: number;
+  terkirim: number;
+  gagal: number;
+  alasan?: string | null;
+}
+
+type ActionState = {
+  success?: boolean;
+  error?: string;
+  message?: string;
+} | null;
+
+// --- UTILS: Ambil Daftar Driver ---
 export async function getDriversList() {
   const res = await pool.query(
     "SELECT user_id, nama_lengkap FROM users_data WHERE user_role_as = 'regular' ORDER BY nama_lengkap ASC"
@@ -11,24 +31,144 @@ export async function getDriversList() {
   return res.rows;
 }
 
-// --- ACTION: Create Shipment (Admin, Regular, & Freelance) ---
-export async function createShipmentAction(prevState: any, formData: FormData) {
+// --- 1. NEW ACTION: Create Shipment (Object Payload) ---
+export async function createShipment(data: ShipmentPayload) {
+  try {
+    const {
+      shipment_id,
+      user_id,
+      nama_freelance,
+      tanggal,
+      jumlah_toko,
+      terkirim,
+      gagal,
+      alasan
+    } = data;
+
+    // Validasi Sederhana
+    if (terkirim > jumlah_toko) {
+      return { success: false, message: 'Jumlah terkirim tidak boleh melebihi total toko' };
+    }
+
+    const query = `
+      INSERT INTO shipment_data (
+        shipment_id, user_id, nama_freelance, tanggal, 
+        jumlah_toko, terkirim, gagal, alasan
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `;
+
+    await pool.query(query, [
+      shipment_id,
+      user_id || null,
+      nama_freelance || null,
+      tanggal,
+      jumlah_toko,
+      terkirim,
+      gagal,
+      alasan || null
+    ]);
+
+    revalidatePath('/dashboard/rekap');
+    revalidatePath('/dashboard/shipment');
+    revalidatePath('/dashboard'); 
+    return { success: true, message: 'Data berhasil disimpan' };
+
+  } catch (error: unknown) {
+    console.error('Create Error:', error);
+    
+    // Type checking aman untuk error database
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      if ((error as { code: string }).code === '23505') {
+        return { success: false, message: 'ID Shipment sudah terdaftar!' };
+      }
+    }
+    return { success: false, message: 'Gagal menyimpan data ke database' };
+  }
+}
+
+// --- 2. NEW ACTION: Update Shipment ---
+export async function updateShipment(data: ShipmentPayload) {
+  try {
+    const {
+      submit_id,
+      shipment_id,
+      user_id,
+      nama_freelance,
+      tanggal,
+      jumlah_toko,
+      terkirim,
+      gagal,
+      alasan
+    } = data;
+
+    const query = `
+      UPDATE shipment_data SET
+        shipment_id = $1,
+        user_id = $2,
+        nama_freelance = $3,
+        tanggal = $4,
+        jumlah_toko = $5,
+        terkirim = $6,
+        gagal = $7,
+        alasan = $8
+      WHERE submit_id = $9
+    `;
+
+    await pool.query(query, [
+      shipment_id,
+      user_id || null,
+      nama_freelance || null,
+      tanggal,
+      jumlah_toko,
+      terkirim,
+      gagal,
+      alasan || null,
+      submit_id
+    ]);
+
+    revalidatePath('/dashboard/rekap');
+    revalidatePath('/dashboard/shipment');
+    revalidatePath('/dashboard');
+    return { success: true, message: 'Data berhasil diperbarui' };
+
+  } catch (error) {
+    console.error('Update Error:', error);
+    return { success: false, message: 'Gagal update data' };
+  }
+}
+
+// --- 3. NEW ACTION: Delete Shipment ---
+export async function deleteShipment(submit_id: number) {
+  try {
+    await pool.query('DELETE FROM freelance_cost WHERE submit_id = $1', [submit_id]);
+    await pool.query('DELETE FROM shipment_data WHERE submit_id = $1', [submit_id]);
+    
+    revalidatePath('/dashboard/rekap');
+    revalidatePath('/dashboard/shipment');
+    revalidatePath('/dashboard');
+    return { success: true, message: 'Data berhasil dihapus' };
+  } catch (error) {
+    console.error('Delete Error:', error);
+    return { success: false, message: 'Gagal menghapus data' };
+  }
+}
+
+// --- 4. LEGACY ACTION: Create Shipment (FormData) ---
+export async function createShipmentAction(prevState: ActionState, formData: FormData) {
   try {
     const rawFormData = Object.fromEntries(formData.entries());
     
-    // 1. Parsing Data & Validasi Dasar
-    const shipment_id = parseFloat(rawFormData.shipment_id as string);
+    const shipment_id = rawFormData.shipment_id as string;
     const jumlah_toko = parseInt(rawFormData.jumlah_toko as string);
     const terkirim = parseInt(rawFormData.terkirim as string);
-    const gagal = jumlah_toko - terkirim; // Auto-calc
+    const gagal = jumlah_toko - terkirim; 
     const tanggal = rawFormData.tanggal;
     
-    // Logika Role & User ID
-    // Jika dari Modal Admin/Freelance, user_id diambil berdasarkan nama_lengkap (driver) yang dipilih
+    // Logic Role
     let user_id = rawFormData.user_id as string; 
-    let nama_freelance = rawFormData.nama_freelance as string || null;
+    // FIX: Menggunakan const karena tidak pernah diubah
+    const nama_freelance = (rawFormData.nama_freelance as string) || null;
 
-    // Validasi Logic
     if (terkirim > jumlah_toko) {
       return { error: 'Jumlah terkirim tidak boleh melebihi jumlah toko.' };
     }
@@ -36,14 +176,11 @@ export async function createShipmentAction(prevState: any, formData: FormData) {
       return { error: 'Alasan wajib diisi jika ada pengiriman gagal.' };
     }
     
-    // Jika Admin/Freelance memilih driver dari dropdown, kita perlu pastikan user_id-nya benar
+    // Logic Fallback ID
     if (!user_id && rawFormData.nama_lengkap) {
-       // Logic tambahan jika perlu lookup user_id by nama_lengkap (biasanya dikirim via hidden input value)
-       // Di sini kita asumsikan value dropdown adalah user_id
        user_id = rawFormData.nama_lengkap as string; 
     }
 
-    // Query Insert
     const query = `
       INSERT INTO shipment_data (
         shipment_id, user_id, nama_freelance, tanggal, 
@@ -61,16 +198,15 @@ export async function createShipmentAction(prevState: any, formData: FormData) {
 
   } catch (err) {
     console.error('Create Shipment Error:', err);
-    return { error: 'Gagal menyimpan data. Pastikan ID Shipment unik atau koneksi aman.' };
+    return { error: 'Gagal menyimpan data. Pastikan ID Shipment unik.' };
   }
 }
 
-// --- ACTION: Update Cost (Admin Only) ---
-export async function upsertFreelanceCost(prevState: any, formData: FormData) {
+// --- 5. EXISTING ACTION: Upsert Freelance Cost (FormData) ---
+export async function upsertFreelanceCost(prevState: ActionState, formData: FormData) {
   try {
     const data = Object.fromEntries(formData.entries());
     
-    // Kalkulasi Server Side (Double Check)
     const fee_harian = Number(data.fee_harian) || 0;
     const perdinas = Number(data.perdinas) || 0;
     const bbm = Number(data.bbm) || 0;
@@ -83,7 +219,6 @@ export async function upsertFreelanceCost(prevState: any, formData: FormData) {
     const sub_total = fee_harian + perdinas + bbm + tol + parkir + tkbm + lain_lain;
     const grand_total = dp_awal - sub_total;
 
-    // Cek apakah data cost sudah ada untuk shipment ini?
     const checkQuery = "SELECT id FROM freelance_cost WHERE submit_id = $1";
     const checkRes = await pool.query(checkQuery, [data.submit_id]);
 
