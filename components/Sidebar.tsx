@@ -74,7 +74,6 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
                     active={pathname === '/dashboard'} 
                   />
 
-                  {/* PROFIL - SUDAH DIBUKA */}
                   <SidebarLink 
                     href="/dashboard/profile" 
                     icon={<User size={18}/>} 
@@ -84,23 +83,21 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
 
                   {/* ADMIN ONLY MENU */}
                   {role === 'admin' && (
-                    <>
-                      {/* REKAP SHIPMENT - SUDAH DIBUKA */}
-                      <SidebarLink 
-                        href="/dashboard/rekap" 
-                        icon={<FileSpreadsheet size={18}/>} 
-                        label="REKAP SHIPMENT" 
-                        active={pathname.startsWith('/dashboard/rekap')}
-                      />
-                      
-                      <SidebarLink 
-                        href="#" 
-                        icon={<BrainCircuit size={18}/>} 
-                        label="QUIZ" 
-                        comingSoon
-                      />
-                    </>
+                    <SidebarLink 
+                      href="/dashboard/rekap" 
+                      icon={<FileSpreadsheet size={18}/>} 
+                      label="REKAP SHIPMENT" 
+                      active={pathname.startsWith('/dashboard/rekap')}
+                    />
                   )}
+
+                  {/* QUIZ MENU - UNTUK SEMUA ROLE */}
+                  <SidebarLink 
+                    href="/dashboard/quiz" 
+                    icon={<BrainCircuit size={18}/>} 
+                    label="QUIZ & TEST" 
+                    active={pathname.startsWith('/dashboard/quiz')}
+                  />
                 </nav>
               </div>
 
@@ -134,7 +131,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
   );
 }
 
-// ... Komponen SidebarLink tetap sama ...
+// ... SidebarLink Component (tidak perlu diubah, tapi disertakan untuk kelengkapan) ...
 interface SidebarLinkProps {
   href: string;
   icon: React.ReactNode;

@@ -56,3 +56,42 @@ export interface DriverOption {
   user_id: string;
   nama_lengkap: string;
 }
+
+
+//export type QuestionType = 'image_choice' | 'likert' | 'multiple_choice' | 'yes_no';
+
+export interface QuestionCategory {
+  category_id: string;
+  category_label: string; // driving_skill, hukum, komunikasi, etc.
+}
+
+export interface QuestionAnswer {
+  answer_id: string;
+  question_id: string;
+  answer_text: string;
+  is_correct: boolean;
+  score_value: number;
+  sort_order: number;
+}
+
+export interface Question {
+  question_id: string;
+  question_text: string;
+  question_image_url?: string | null;
+  type_id: string;
+  is_scored: boolean;
+  // Opsional: Untuk keperluan frontend saat fetching data gabungan
+  answers?: QuestionAnswer[]; 
+  categories?: QuestionCategory[];
+}
+
+export interface UserTest {
+  user_test_id: string;
+  user_id: string;
+  test_status: 'START' | 'COMPLETE';
+  started_at: Date;
+  completed_at?: Date;
+  reset_by_admin: boolean;
+  // Opsional: Hasil kalkulasi nilai
+  final_score?: number;
+}
