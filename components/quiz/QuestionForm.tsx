@@ -298,7 +298,7 @@ export default function QuestionForm({ types, categories, initialData }: Questio
                       value={ans.answer_text}
                       onChange={(e) => updateAnswer(idx, 'answer_text', e.target.value)}
                       placeholder={`Opsi Jawaban ${String.fromCharCode(65 + idx)}`}
-                      className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none ${
+                      className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 ${
                         ans.is_correct ? 'border-green-500 bg-green-50/30' : 'border-slate-300'
                       }`}
                     />
@@ -309,7 +309,7 @@ export default function QuestionForm({ types, categories, initialData }: Questio
                           type="number"
                           value={ans.score_value}
                           onChange={(e) => updateAnswer(idx, 'score_value', parseInt(e.target.value) || 0)}
-                          className="w-16 p-1 border border-slate-300 rounded text-center"
+                          className="w-16 p-1 border border-slate-300 rounded text-center text-slate-800"
                         />
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function QuestionForm({ types, categories, initialData }: Questio
             <select
               value={typeId}
               onChange={(e) => setTypeId(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
             >
               {types.map(t => (
                 <option key={t.type_id} value={t.type_id}>{t.type_name}</option>

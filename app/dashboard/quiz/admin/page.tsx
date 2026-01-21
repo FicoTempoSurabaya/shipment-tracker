@@ -1,4 +1,9 @@
 import React from 'react';
+import pool from '@/lib/db';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import DashboardClient from '../../DashboardClient';
+import AdminDashboardClient from './AdminDashboardClient';
 import { 
   getAllQuestions, 
   getAdminDashboardStats, 
@@ -6,9 +11,7 @@ import {
   getParticipatedUsers,
   getPendingUsers 
 } from '@/app/quiz-admin-actions';
-import AdminDashboardClient from './AdminDashboardClient';
 
-// Tipe data untuk koordinasi antara Server dan Client
 export interface QuestionSummary {
   question_id: string;
   question_text: string;
@@ -31,7 +34,20 @@ export interface TypeStat {
 }
 
 export default async function QuizAdminPage() {
-  // Ambil semua data secara paralel untuk performa maksimal
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('user_id')?.value;
+  const userRole = cookieStore.get('user_role')?.value;
+
+  if (!userId || userRole !== 'admin') redirect('/');
+
+  // Ambil Data User untuk DashboardClient
+  const userRes = await pool.query(
+    'SELECT user_id, nama_lengkap, user_role_as FROM users_data WHERE user_id = $1', 
+    [userId]
+  );
+  const userProfile = userRes.rows[0];
+
+  // Ambil Data Quiz
   const [
     questionsRaw, 
     stats, 
@@ -46,25 +62,18 @@ export default async function QuizAdminPage() {
     getPendingUsers()
   ]);
 
-  // Casting data ke tipe yang sesuai
   const questions = questionsRaw as unknown as QuestionSummary[];
   const typeStats = typeStatsRaw as unknown as TypeStat[];
   const participatedUsers = participatedRaw as unknown as UserStatusData[];
   const pendingUsers = pendingRaw as unknown as UserStatusData[];
 
   return (
-    <div className="p-4 md:p-8">
-      {/* Header Utama */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-black text-slate-800 tracking-tight">
-          Quiz Control Center
-        </h1>
-        <p className="text-slate-500 font-medium">
-          Monitor performa peserta dan kelola bank soal secara real-time.
-        </p>
-      </div>
-
-      {/* Teruskan data ke Client Component untuk interaksi dinamis */}
+    <DashboardClient 
+      user={userProfile} 
+      allData={[]} 
+      drivers={[]} 
+      initialPeriod={{start: '', end: ''}}
+    >
       <AdminDashboardClient 
         questions={questions}
         stats={stats}
@@ -72,6 +81,6 @@ export default async function QuizAdminPage() {
         participatedUsers={participatedUsers}
         pendingUsers={pendingUsers}
       />
-    </div>
+    </DashboardClient>
   );
 }
